@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Face Recognition</title>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+</head>
+<body>
+  <video id="webcam" autoplay playsinline width="224" height="224"></video>
+  <div id="label-container"></div>
+
+  <script type="text/javascript">
+    const URL = "https://your-hosted-model-path/";
+    let model, webcam, labelContainer;
+
+    async function init() {
+      model = await tmImage.load(URL + "model.json", URL + "metadata.json");
+      webcam = new tmImage.Webcam(224, 224, true);
+      await webcam.setup();
+      await webcam.play();
+      document.getElementById("webcam").appendChild(webcam.canvas);
+      labelContainer = document.getElementById("label-container");
+
+      setInterval(() => predict(), 1000);
+    }
+
+    async function predict() {
+      const prediction = await model.predict(webcam.canvas);
+      const highest = prediction.reduce((a, b) => a.probability > b.probability ? a : b);
+      labelContainer.innerHTML = highest.className;
+      window.AppInventor.setWebViewString(highest.className);
+    }
+
+    init();
+  </script>
+</body>
+</html>
